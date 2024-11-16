@@ -1,0 +1,124 @@
+.content {
+    display: flex;
+    justify-content: center;
+    max-width: 1400px;
+    margin: 25px auto;
+    padding: 25px 50px;
+    height: calc(100% - 250px);
+    gap: 50px;
+}
+
+.content-left {
+    width: 65%;
+}
+
+.content-left-split {
+    display: flex;
+    gap: 25px;
+}
+
+.content-left-split-item {
+    height: max-content;
+}
+
+.content-right {
+    width: 35%;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-right-scroll {
+    overflow: auto;
+}
+
+.my-stocks-item {
+    background-color: #e9ecf0;
+    border: 2px solid #5D5C5C;
+}
+
+.my-stocks-item .my-stocks-item-name {
+    font-weight: 500;
+    font-size: 20px;
+    color: #5D5C5C;
+}
+
+.my-stocks-item .my-stocks-item-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #5D5C5C;
+}
+
+.my-stocks-item .my-stocks-item-pc {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.stock-positive .my-stocks-item-pc {
+    color: var(--green);
+}
+
+.stock-negative .my-stocks-item-pc {
+    color: var(--red);
+}
+
+/* .form-control:disabled {
+    background-color: #D8D8D8;
+}
+
+.form-floating>.form-control:disabled~label::after,
+.form-floating>:disabled~label::after {
+    background-color: #D8D8D8;
+} */
+
+.modal-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.mygraph {
+    display: flex !important;
+    width: 400px !important;
+    background: gray !important;
+}
+
+@media screen and (max-width: 1250px) {
+    .content-right {
+        width: 36%;
+    }
+}
+
+@media screen and (max-width: 1086px) {
+    .content {
+        flex-direction: column;
+        justify-content: flex-start;
+        height: 100%;
+        margin: 0 auto;
+        align-items: center;
+        padding: 25px 100px;
+    }
+
+    /* Between elements inside of content */
+    .content>*+* {
+        margin-left: 0px;
+    }
+
+    .content-left {
+        width: 100%;
+    }
+
+    .content-right {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+@media screen and (max-width: 756px) {
+    .content {
+        padding: 25px 25px;
+    }
+
+    .content-left-split {
+        flex-direction: column;
+    }
+}

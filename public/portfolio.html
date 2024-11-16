@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stockmark - Portfolio</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+    <!-- Navigation Script -->
+    <script type="module">
+        if (!localStorage.permit || !localStorage.user) {
+            localStorage.clear();
+            window.location.replace("/");
+        }
+
+        var response = await(await fetch('/portfolio?permit=' + localStorage.permit)).json();
+        if (response.success == false) {
+            localStorage.clear();
+            window.location.replace("/");
+        }
+
+        // success
+        localStorage.user = JSON.stringify(response.data);
+    </script>
+
+
+    <!-- Alpine JavaScript -->
+    <script type="module" src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/portfolio.css">
+</head>
+
+<body x-init="initialize()">
+    <header>
+        <a class="header-title smaller-screen-header" href="#">Stockmark</a>
+        <nav>
+            <a href="/portfolio" class="active">Portfolio</a>
+            <a href="/trade">Trade</a>
+            <a href="/transactions">Transactions</a>
+        </nav>
+
+        <div class="dropdown text-end">
+            <a href="#" class="d-block link-body-emphasis text-decoration-none" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-list"
+                    viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                </svg>
+            </a>
+            <ul class="dropdown-menu text-small">
+                <li class="dropdown-item-mobile"><a class="dropdown-item" href="trade">Trade</a></li>
+                <li class="dropdown-item-mobile"><a class="dropdown-item" href="transactions">Transactions</a></li>
+                <li class="dropdown-item-mobile">
+                    <hr class="dropdown-divider">
+                    </hr>
+                </li>
+                <li><a class="dropdown-item" href="myprofile">Profile</a></li>
+                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#depositModal">Deposit</a></li>
+                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#leaderboardsModal">Leaderboards</a>
+                </li>
+                <li>
+                    <hr class="dropdown-divider">
+                    </hr>
+                </li>
+                <li><a class="dropdown-item" href="" @click="logout()">Sign out</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Separator -->
+    <div class="separator"></div>
+
+    <!-- View Stock Modal  -->
+    <div class="modal fade" id="viewStockModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" x-data="{ amount:0, worth: 0, option: 'sell'}"
+            x-init="$watch('amount', value => worth= 0)">
+            <div class="modal-content rubik" style="color: black;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewStockTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Owned</label>
+                    <div class="input-group mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="viewStockHaveAmount" disabled>
+                            <label>Amount</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="viewStockTotalWorth" disabled>
+                            <label>Value</label>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="viewStockPricePerUnit" disabled>
+                        <label>Price per unit</label>
+                    </div>
+
+                    <form action="/quick" id="quickActionForm">
+                        <label class="form-label">Action</label>
+                        <select class="form-select mb-3" name="action" x-model="option">
+                            <option selected value="sell">Sell</option>
+                            <option value="buy">Buy</option>
+                        </select>
+
+                        <input type="hidden" id="viewStockTicker" name="ticker" />
+
+                        <div class="input-group mb-3">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" name="amount" x-model="amount">
+                                <label>Amount</label>
+                            </div>
+                            <div class="form-floating">
+                                <input type="number" class="form-control" x-model="worth" disabled>
+                                <label>Worth in $</label>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-dark" form="quickActionForm" value="Submit"
+                        :disabled="true">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit Modal  -->
+    <div class="modal fade" id="depositModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rubik" style="color: black;" x-data="{ amount: 0 }">
+                <div class="modal-header">
+                    <h5 class="modal-title">Deposit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="deposit(amount); amount = 0;" id="depositForm">
+                        <div class="mb-3">
+                            <label class="form-label">Deposit Amount</label>
+                            <input type="number" class="form-control" x-model="amount">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-dark" form="depositForm">Deposit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboards Modal  -->
+    <div class="modal fade" id="leaderboardsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rubik" style="color: black;">
+                <div class="modal-header">
+                    <h5 class="modal-title">Leaderboards</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ol class="list-group list-group-numbered">
+                        <li th:each="user: ${leaderboards}"
+                            class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold" th:text="${name}"></div>
+                            </div>
+                            <span class="badge bg-dark rounded-pill" th:text="${pcChange} + '%'"></span>
+                        </li>
+                    </ol>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="content-left rubik">
+            <div class="p-3"><span class="fs-4 fw-semibold">My Progress</span></div>
+            <div class="content-left-split">
+                <div class="content-left-split-item border">
+                    <div class="p-3"><span class="fs-5">Overall</span></div>
+                    <div class="input-group">
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0" :value="'$' + $store.user.depositedTillDate"
+                                disabled>
+                            <label>Deposited till date</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0" :value="'$' + $store.user.currentBalance"
+                                disabled>
+                            <label>Current balance</label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0"
+                                :value="'$' + $store.user.totalSpentOnActiveAssets" disabled>
+                            <label>Assets cost</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0" :value="'$' + $store.user.activeAssetsValue"
+                                disabled>
+                            <label>Assets value</label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0"
+                                :value="$store.user.mostProfitable || 'Unavailable'" disabled>
+                            <label>Most profitable</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0"
+                                :class="($store.user.mostProfitableAmount > 0) ? 'text-green' : 'text-red'"
+                                :value="'$' + Math.abs($store.user.mostProfitableAmount) + ' or ' + $store.user.mostProfitablePc+'%'"
+                                disabled>
+                            <label>Change</label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0"
+                                :value="$store.user.leastProfitable || 'Unavailable'" disabled>
+                            <label>Least profitable</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0"
+                                :class="($store.user.leastProfitableAmount > 0) ? 'text-green' : 'text-red'"
+                                :value="'$' + Math.abs($store.user.leastProfitableAmount) + ' or ' + $store.user.leastProfitablePc+'%'"
+                                disabled>
+                            <label>Change</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-left-split-item border">
+                    <div class="p-3"><span class="fs-5">Today</span></div>
+                    <div class="input-group">
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0"
+                                :value="$store.user.mostProfitableToday || 'Unavailable'" disabled>
+                            <label>Most profitable</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0 text-green"
+                                :class="($store.user.mostProfitableTodayAmount > 0) ? 'text-green' : 'text-red'"
+                                :value="'$' + Math.abs($store.user.mostProfitableTodayAmount) + ' or ' + $store.user.mostProfitableTodayPc+'%'"
+                                disabled>
+                            <label>Change</label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0"
+                                :value="$store.user.leastProfitableToday || 'Unavailable'" disabled>
+                            <label>Least profitable</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0 text-red"
+                                :class="($store.user.leastProfitableTodayAmount > 0) ? 'text-green' : 'text-red'"
+                                :value="'$' + Math.abs($store.user.leastProfitableTodayAmount) + ' or ' + $store.user.leastProfitableTodayPc+'%'"
+                                disabled>
+                            <label>Change</label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="form-floating">
+                            <input type="text" class="form-control br-0"
+                                :class="($store.user.totalChangeToday > 0) ? 'text-green' : 'text-red'"
+                                :value="'$' + Math.abs($store.user.totalChangeToday)" disabled>
+                            <label>Total change</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-right rubik">
+            <div class="p-3">
+                <span class="fs-4 fw-semibold">My Stocks</span>
+            </div>
+            <div class="content-right-scroll border">
+                <div class="p-3"><span class="fs-5">Currently</span></div>
+                <div class="list-group list-group-flush scrollarea">
+                    <template x-for="asset in $store.user.assets">
+                        <a x-data="asset" :class="(changePc > 0) ? 'stock-positive' : 'stock-negative'"
+                            @click="openQuickView($data);"
+                            class="my-stocks-item list-group-item list-group-item-action py-3 lh-tight"
+                            aria-current="true">
+                            <div class="d-flex w-100 align-items-center justify-content-between">
+                                <strong class="my-stocks-item-name" x-text="ticker"></strong>
+                                <div class="d-flex flex-column align-items-end">
+                                    <small class="my-stocks-item-value" x-text="'$' + totalWorth"></small>
+                                    <small class="my-stocks-item-pc" x-text="changePc + '%'"></small>
+                                </div>
+                            </div>
+                        </a>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var depositModal = new bootstrap.Modal(document.getElementById("depositModal"));
+        var viewStockModal = new bootstrap.Modal(document.getElementById("viewStockModal"));
+
+        function initialize() {
+            var user = JSON.parse(localStorage.user);
+            if (user.assets == null) user.assets = [];
+            if (user.history == null) user.history = [];
+            Alpine.store('user', user);
+            // Alpine.store('user').Something = 'Doe';
+        }
+
+        function logout() {
+            localStorage.clear();
+            fetch('/logout?permit=' + localStorage.permit);
+        }
+
+        function deposit(amount) {
+            fetch(`/deposit?permit=${localStorage.permit}&amount=${amount}`).then((response) => response.json()).then((response) => {
+                if (response.success == true) {
+                    depositModal.hide();
+                    Alpine.store('user', response.data);
+                } else console.log(response);
+            });
+        }
+
+        function openQuickView({ ticker, amount, pricePerUnit, changePc, totalWorth }) {
+            viewStockTitle.innerText = ticker;
+            viewStockHaveAmount.value = amount;
+            viewStockTotalWorth.value = '$' + totalWorth;
+            viewStockTicker.value = ticker;
+            viewStockPricePerUnit.value = '$' + pricePerUnit;
+            viewStockModal.show();
+        }
+    </script>
+</body>
+
+</html>

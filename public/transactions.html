@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stockmark - Transactions</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+    <!-- Alpine JavaScript -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="transactions.css">
+    <script>
+    </script>
+</head>
+
+<body>
+    <div th:replace="~{navbar :: navigationBar}"></div>
+
+    <!-- Deposit Modal  -->
+    <div class="modal fade" id="depositModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rubik" style="color: black;">
+                <div class="modal-header">
+                    <h5 class="modal-title">Deposit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/deposit" id="depositForm">
+                        <div class="mb-3">
+                            <label class="form-label">Deposit Amount</label>
+                            <input type="number" class="form-control" name="amount">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-dark" form="depositForm" value="Submit">Deposit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboards Modal  -->
+    <div class="modal fade" id="leaderboardsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rubik" style="color: black;">
+                <div class="modal-header">
+                    <h5 class="modal-title">Leaderboards</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ol class="list-group list-group-numbered">
+                        <li th:each="user: ${leaderboards}"
+                            class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold" th:text="${user.name}"></div>
+                            </div>
+                            <span class="badge bg-dark rounded-pill" th:text="${user.pcChange} + '%'"></span>
+                        </li>
+                    </ol>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        <table class="table table-striped" id="transactionTable" aria-describedby="A table showing all transactions.">
+            <tr style="border: 1px solid white;" class="header">
+                <th class="cell" style="background-color: transparent; color: #d8d8d8; border: none;">Stock Name</th>
+                <th class="cell" style="background-color: transparent; color: #d8d8d8; border: none;">Bought / Sold</th>
+                <th class="cell" style="background-color: transparent; color: #d8d8d8; border: none;">Amount</th>
+                <th class="cell" style="background-color: transparent; color: #d8d8d8; border: none;">Unit Price</th>
+                <th class="cell" style="background-color: transparent; color: #d8d8d8; border: none;">Transaction Date
+                </th>
+            </tr>
+            <tr th:each="transaction : ${history}">
+                <td class="cell" th:text="${transaction.ticker}">
+                <td class="cell" th:style="${transaction.action == 'sell' ? 'color: red' : 'color: green'}"
+                    th:text="${#strings.capitalize(transaction.action)}">
+                <td class="cell" th:text="${transaction.amount}">
+                <td class="cell" th:text="${'$'+transaction.unitPrice}">
+                <td class="cell" th:text="${transaction.time}">
+            </tr>
+        </table>
+        <div class="page-link-row">
+            <a class="page-link" th:each="page : ${pagesList}" th:href="@{/transactions(page=${page})}"
+                th:text="${page+1}" th:style="${page == currentPage ? 'color: gray' : 'color: white'}">
+        </div>
+    </div>
+
+    <form action="/formathistory" id="searchForm" class="d-flex">
+        <button type="submit" class="btn btn-dark">
+            Get excel text
+        </button>
+    </form>
+
+    <div th:if="${excelText}">
+        <div id="copyableText" th:text="${excelText}" style="display: none;">
+            display exceltext here
+        </div>
+
+        <script>
+            function copyAllText() {
+                var copyableText = document.getElementById('copyableText').textContent;
+
+                var copyTextArea = document.createElement('textarea');
+                copyTextArea.textContent = copyableText;
+
+                document.body.appendChild(copyTextArea);
+                copyTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(copyTextArea);
+            }
+        </script>
+    </div>
+    <div th:if="${excelFile}">
+        <a th:href="'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + ${excelFile}"
+            download="history.xlsx">
+            <button class="btn btn-dark">Get Excel File</button>
+        </a>
+    </div>
+
+</body>
+
+    <div th:if="${excelText}">
+        <div id="copyableText" th:text="${excelText}" style="display: none;">
+            display exceltext here
+        </div>
+
+        <button onclick="copyAllText()" class="btn btn-dark">
+            To Clipboard
+        </button>
+
+        <script>
+            function copyAllText(){
+                var copyableText = document.getElementById('copyableText').textContent;
+
+                var copyTextArea = document.createElement('textarea');
+                copyTextArea.textContent = copyableText;
+
+                document.body.appendChild(copyTextArea);
+                copyTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(copyTextArea);
+            }
+        </script>
+    </div>
+
+</body>
+</html>

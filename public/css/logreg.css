@@ -1,0 +1,38 @@
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    cursor: pointer;
+}
+
+.rubik {
+    font-family: "Rubik"
+}
+
+header {
+    text-align: center;
+    font-family: "Rubik";
+    padding: 25px 50px;
+}
+
+header > .header-title {
+    font-weight: 600;
+    font-size: 30px;
+    color: black;
+}
+
+.logreg-form {
+    max-width: 800px;
+    margin: 11% auto;
+    font-family: "Rubik";
+    padding: 0px 50px;
+}
+
+@media screen and (max-width: 756px) {
+    .logreg-form {
+        padding: 0px 25px;
+    }
+}
+
+[x-cloak] { display: none !important; }
