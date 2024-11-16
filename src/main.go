@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"stockmark/model"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -25,7 +26,16 @@ func main() {
 
 	e.GET("/portfolio", OnGetPortfolio)
 	e.GET("/deposit", OnGetDeposit)
-	e.GET("/inquire", OnGetInquire)
+	e.GET("/inquire", func(c echo.Context) error {
+		if c.QueryParam("stock") != "" {
+			stock, err := model.Inquire(c.QueryParam("stock"))
+			if err != nil {
+				return c.String(http.StatusOK, err.Error())
+			}
+			return c.String(http.StatusOK, strconv.FormatFloat(stock.LastPrice, 'f', -1, 64))
+		}
+		return c.String(http.StatusOK, "Provide stock name!")
+	})
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

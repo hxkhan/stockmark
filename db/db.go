@@ -2,16 +2,12 @@ package db
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 	"strings"
 )
 
 const accountsFileName = "./db/accounts.json"
 const tickersFileName = "./db/tickers.json"
-
-var ErrUserAlreadyExists = errors.New("user already exists")
-var ErrUserNotFound = errors.New("user not found")
 
 type Account struct {
 	FirstName string
@@ -33,41 +29,19 @@ type Account struct {
 	}
 }
 
-func GetAccount(email string) (Account, error) {
+func LoadAccount(email string) (acc Account, exists bool) {
 	email = strings.ToLower(email)
 	accounts := fetchUsers()
 
-	if acc, exists := accounts[email]; exists {
-		acc.Email = email
-		return acc, nil
-	}
-	return Account{}, ErrUserNotFound
+	acc, exists = accounts[email]
+	acc.Email = email
+	return acc, exists
 }
 
-func CreateAccount(name, lname, email, password string) (Account, error) {
-	email = strings.ToLower(email)
+func SaveAccount(acc Account) {
 	accounts := fetchUsers()
-
-	if acc, exists := accounts[email]; exists {
-		return acc, ErrUserAlreadyExists
-	}
-
-	acc := Account{FirstName: name, LastName: lname, Email: email, Password: password}
-	accounts[email] = acc
+	accounts[strings.ToLower(acc.Email)] = acc
 	saveUsers(accounts)
-	return acc, nil
-}
-
-func UpdateAccount(acc Account) error {
-	accounts := fetchUsers()
-
-	if _, exists := accounts[acc.Email]; !exists {
-		return ErrUserNotFound
-	}
-
-	accounts[acc.Email] = acc
-	saveUsers(accounts)
-	return nil
 }
 
 func GetSupportedTickers() []string {

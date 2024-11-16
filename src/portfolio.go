@@ -45,14 +45,3 @@ func OnGetDeposit(c echo.Context) error {
 		"data":    presentation,
 	})
 }
-
-func OnGetInquire(c echo.Context) error {
-	if c.QueryParam("stock") != "" {
-		stock, err := model.Inquire(c.QueryParam("stock"))
-		if err != nil {
-			return c.String(http.StatusOK, err.Error())
-		}
-		return c.String(http.StatusOK, strconv.FormatFloat(stock.LastPrice, 'f', -1, 64))
-	}
-	return c.String(http.StatusOK, "Provide stock name!")
-}

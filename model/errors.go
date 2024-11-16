@@ -1,13 +1,9 @@
 package model
 
-import (
-	"errors"
-	"stockmark/db"
-)
+import "errors"
 
-var ErrUserAlreadyExists = db.ErrUserAlreadyExists
-var ErrUserNotFound = db.ErrUserNotFound
-
+var ErrAccountExists = errors.New("account exists")
+var ErrAccountNotExists = errors.New("account not exists")
 var ErrIncorrectPassword = errors.New("incorrect password")
 var ErrNoPermitProvided = errors.New("no permit provided")
 var ErrNotLoggedIn = errors.New("not logged in")

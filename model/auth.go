@@ -17,10 +17,17 @@ type entry struct {
 }
 
 func Register(fname, lname, email, password string) (Permit, error) {
-	acc, err := db.CreateAccount(fname, lname, email, password)
-	if err != nil {
-		return "", err
+	acc, exists := db.LoadAccount(email)
+	if exists {
+		return "", ErrAccountExists
 	}
+
+	db.SaveAccount(db.Account{
+		FirstName: fname,
+		LastName:  lname,
+		Email:     email,
+		Password:  password,
+	})
 
 	id := Permit(uuid.New().String())
 	logins[id] = entry{
@@ -32,9 +39,9 @@ func Register(fname, lname, email, password string) (Permit, error) {
 }
 
 func Login(email, password string) (Permit, error) {
-	acc, err := db.GetAccount(email)
-	if err != nil {
-		return "", err
+	acc, exists := db.LoadAccount(email)
+	if !exists {
+		return "", ErrAccountNotExists
 	}
 
 	if acc.Password != password {
@@ -55,12 +62,18 @@ func (p Permit) exchange() (db.Account, error) {
 		return db.Account{}, ErrNoPermitProvided
 	}
 
-	if entry, has := logins[p]; has {
-		// also check how old the entry is
-		acc, _ := db.GetAccount(entry.email)
-		return acc, nil
+	entry, has := logins[p]
+	if !has {
+		return db.Account{}, ErrNotLoggedIn
 	}
-	return db.Account{}, ErrNotLoggedIn
+
+	acc, exists := db.LoadAccount(entry.email)
+	if !exists {
+		return db.Account{}, ErrAccountNotExists
+	}
+
+	return acc, nil
+
 }
 
 func (p Permit) Logout() error {

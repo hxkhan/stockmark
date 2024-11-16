@@ -1,6 +1,8 @@
 package model
 
-import "math"
+import (
+	"math"
+)
 
 type UserPresentation struct {
 	FirstName string `json:"firstName"`
