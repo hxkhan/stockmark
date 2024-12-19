@@ -1,10 +1,11 @@
 package model
 
 import (
-	"stockmark/db"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/pocketbase/dbx"
 )
 
 var logins = make(map[Permit]entry)
@@ -12,68 +13,89 @@ var logins = make(map[Permit]entry)
 type Permit string
 
 type entry struct {
-	email      string
-	lastUpdate time.Time
+	email        string
+	lastActivity time.Time
 }
 
 func Register(fname, lname, email, password string) (Permit, error) {
-	acc, exists := db.LoadAccount(email)
-	if exists {
+	err := pb.DB().NewQuery("SELECT * FROM users WHERE email = {:e}").Bind(dbx.Params{
+		"e": email,
+	}).One(&User{})
+
+	// no existing user with the specified email
+	if err == sql.ErrNoRows {
+		_, err = pb.DB().NewQuery("INSERT INTO users (email, firstName, lastName, password) VALUES ({:e}, {:f}, {:l}, {:p})").Bind(dbx.Params{
+			"e": email,
+			"f": fname,
+			"l": lname,
+			"p": password,
+		}).Execute()
+
+		if err != nil {
+			return "", err
+		}
+
+		id := Permit(uuid.New().String())
+		logins[id] = entry{
+			email,
+			time.Now(),
+		}
+
+		return id, nil
+	}
+
+	// no error means user with the specified email exists
+	if err == nil {
 		return "", ErrAccountExists
 	}
 
-	db.SaveAccount(db.Account{
-		FirstName: fname,
-		LastName:  lname,
-		Email:     email,
-		Password:  password,
-	})
-
-	id := Permit(uuid.New().String())
-	logins[id] = entry{
-		acc.Email,
-		time.Now(),
-	}
-
-	return id, nil
+	// unknown error
+	return "", ErrAccountExists
 }
 
 func Login(email, password string) (Permit, error) {
-	acc, exists := db.LoadAccount(email)
-	if !exists {
+	user := User{}
+	err := pb.DB().NewQuery("SELECT * FROM users WHERE email = {:e}").Bind(dbx.Params{
+		"e": email,
+	}).One(&user)
+
+	if err == sql.ErrNoRows {
 		return "", ErrAccountNotExists
 	}
 
-	if acc.Password != password {
+	if user.Password != password {
 		return "", ErrIncorrectPassword
 	}
 
 	id := Permit(uuid.New().String())
 	logins[id] = entry{
-		acc.Email,
+		email,
 		time.Now(),
 	}
 
 	return id, nil
 }
 
-func (p Permit) exchange() (db.Account, error) {
+func (p Permit) exchange() (User, error) {
 	if p == "" {
-		return db.Account{}, ErrNoPermitProvided
+		return User{}, ErrNoPermitProvided
 	}
 
 	entry, has := logins[p]
 	if !has {
-		return db.Account{}, ErrNotLoggedIn
+		return User{}, ErrNotLoggedIn
 	}
 
-	acc, exists := db.LoadAccount(entry.email)
-	if !exists {
-		return db.Account{}, ErrAccountNotExists
+	user := User{}
+	err := pb.DB().NewQuery("SELECT * FROM users WHERE email = {:e}").Bind(dbx.Params{
+		"e": entry.email,
+	}).One(&user)
+
+	if err == sql.ErrNoRows {
+		return User{}, ErrAccountNotExists
 	}
 
-	return acc, nil
-
+	return user, nil
 }
 
 func (p Permit) Logout() error {

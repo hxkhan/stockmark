@@ -5,30 +5,30 @@ import (
 	"stockmark/model"
 	"strconv"
 
-	"github.com/labstack/echo/v4"
+	"github.com/pocketbase/pocketbase/core"
 )
 
-func OnGetPortfolio(c echo.Context) error {
-	permit := model.Permit(c.QueryParam("permit"))
+func OnGetPortfolio(e *core.RequestEvent) error {
+	permit := model.Permit(e.Request.URL.Query().Get("permit"))
 
-	presentation, err := permit.PresentUser()
+	page, err := permit.RenderPortfolio()
 	if err != nil {
-		return failure(c, err)
+		return failure(e, err)
 	}
 
-	return c.JSON(http.StatusOK, object{
+	return e.JSON(http.StatusOK, map[string]any{
 		"success": true,
-		"data":    presentation,
+		"data":    page,
 	})
 }
 
-func OnGetDeposit(c echo.Context) error {
-	permit := model.Permit(c.QueryParam("permit"))
-	amount := c.QueryParam("amount")
+func OnGetDeposit(e *core.RequestEvent) error {
+	permit := model.Permit(e.Request.URL.Query().Get("permit"))
+	amount := e.Request.URL.Query().Get("amount")
 
 	i64, err := strconv.ParseInt(amount, 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusOK, object{
+		return e.JSON(http.StatusOK, map[string]any{
 			"success": false,
 			"message": "invalid arguments",
 		})
@@ -36,12 +36,12 @@ func OnGetDeposit(c echo.Context) error {
 
 	err = permit.Deposit(int(i64))
 	if err != nil {
-		return failure(c, err)
+		return failure(e, err)
 	}
 
-	presentation, _ := permit.PresentUser()
-	return c.JSON(http.StatusOK, object{
+	page, _ := permit.RenderPortfolio()
+	return e.JSON(http.StatusOK, map[string]any{
 		"success": true,
-		"data":    presentation,
+		"data":    page,
 	})
 }

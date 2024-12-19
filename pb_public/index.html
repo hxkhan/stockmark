@@ -78,15 +78,17 @@
                     "Content-type": "application/json; charset=UTF-8"
                 }
             }).then((response) => response.json()).then((data) => {
+                console.log(data);
+
                 if (data.success == false) {
                     document.getElementById("errorMessageBox").style.display = 'block';
                     document.getElementById("errorMessage").innerHTML = data.message;
                     return;
+                } else if (data.success) {
+                    localStorage.setItem("permit", data.permit);
+                    localStorage.setItem("user", JSON.stringify(data.data));
+                    window.location.replace("/portfolio.html");
                 }
-
-                localStorage.setItem("permit", data.permit);
-                localStorage.setItem("user", JSON.stringify(data.data));
-                window.location.replace("/portfolio.html");
             });
         }
     </script>

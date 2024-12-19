@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"stockmark/db"
 	"strings"
 )
 
@@ -22,14 +21,6 @@ type StockPresentationBasic struct {
 	OpenPrice     float64 `json:"openPrice"`
 	HighPrice     float64 `json:"highPrice"`
 	Volume        float64 `json:"volume"`
-}
-
-func init() {
-	supportedTickers := db.GetSupportedTickers()
-
-	for _, v := range supportedTickers {
-		go fetchStock(v)
-	}
 }
 
 func fetchStock(ticker string) {

@@ -1,59 +1,41 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"os"
 	"stockmark/model"
-	"strconv"
 
-	"github.com/labstack/echo/v4"
+	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/core"
 )
 
-type object map[string]any
-
-// go build -o bin/main.exe ./src && bin\main
+// go build -o ./main.exe ./src && ./main serve
 func main() {
-	e := echo.New()
-	e.Static("/", "public")
+	app := pocketbase.New()
+	model.Initialize(app)
 
-	e.POST("/login", OnPostLogin)
-	e.POST("/register", OnPostRegister)
-	e.GET("/logout", func(c echo.Context) error {
-		permit := model.Permit(c.QueryParam("permit"))
+	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
+		// serves static files from the provided public dir (if exists)
+		se.Router.GET("/{path...}", apis.Static(os.DirFS("./pb_public"), false))
 
-		permit.Logout()
-		return c.JSON(http.StatusOK, object{"success": true})
+		se.Router.POST("/register", OnPostRegister)
+		se.Router.POST("/login", OnPostLogin)
+
+		se.Router.GET("/portfolio", OnGetPortfolio)
+		se.Router.GET("/deposit", OnGetDeposit)
+
+		return se.Next()
 	})
 
-	e.GET("/portfolio", OnGetPortfolio)
-	e.GET("/deposit", OnGetDeposit)
-	e.GET("/inquire", func(c echo.Context) error {
-		if c.QueryParam("stock") != "" {
-			stock, err := model.Inquire(c.QueryParam("stock"))
-			if err != nil {
-				return c.String(http.StatusOK, err.Error())
-			}
-			return c.String(http.StatusOK, strconv.FormatFloat(stock.LastPrice, 'f', -1, 64))
-		}
-		return c.String(http.StatusOK, "Provide stock name!")
-	})
-
-	e.Logger.Fatal(e.Start(":8080"))
-}
-
-func echoExtractBodyInto[T any](c echo.Context) (T, error) {
-	var value T
-	err := c.Bind(&value)
-	if err != nil {
-		return value, c.JSON(http.StatusOK, object{
-			"success": false,
-			"message": "invalid request body",
-		})
+	if err := app.Start(); err != nil {
+		log.Fatal(err)
 	}
-	return value, nil
 }
 
-func failure(c echo.Context, err error) error {
-	return c.JSON(http.StatusOK, object{
+func failure(e *core.RequestEvent, err error) error {
+	return e.JSON(http.StatusOK, map[string]any{
 		"success": false,
 		"message": err.Error(),
 	})

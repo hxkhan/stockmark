@@ -4,60 +4,60 @@ import (
 	"net/http"
 	"stockmark/model"
 
-	"github.com/labstack/echo/v4"
+	"github.com/pocketbase/pocketbase/core"
 )
 
-type BodyOfLogin struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
+func OnPostLogin(e *core.RequestEvent) error {
+	body := struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}{}
 
-type BodyOfRegister struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-}
-
-func OnPostLogin(c echo.Context) error {
-	body, err := echoExtractBodyInto[BodyOfLogin](c)
+	err := e.BindBody(&body)
 	if err != nil {
-		return err
+		return failure(e, err)
 	}
 
 	permit, err := model.Login(body.Email, body.Password)
 	if err != nil {
-		return failure(c, err)
+		return failure(e, err)
 	}
 
-	presentation, err := permit.PresentUser()
+	page, err := permit.RenderPortfolio()
 	if err != nil {
-		return failure(c, err)
+		return failure(e, err)
 	}
 
-	return c.JSON(http.StatusOK, object{
+	return e.JSON(http.StatusOK, map[string]any{
 		"success": true,
 		"permit":  permit,
-		"data":    presentation,
+		"data":    page,
 	})
 }
 
-func OnPostRegister(c echo.Context) error {
-	body, err := echoExtractBodyInto[BodyOfRegister](c)
+func OnPostRegister(e *core.RequestEvent) error {
+	body := struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		Password  string `json:"password"`
+	}{}
+
+	err := e.BindBody(&body)
 	if err != nil {
-		return err
+		return failure(e, err)
 	}
 
 	permit, err := model.Register(body.FirstName, body.LastName, body.Email, body.Password)
 	if err != nil {
-		return failure(c, err)
+		return failure(e, err)
 	}
 
-	presentation, err := permit.PresentUser()
+	presentation, err := permit.RenderPortfolio()
 	if err != nil {
-		return failure(c, err)
+		return failure(e, err)
 	}
-	return c.JSON(http.StatusOK, object{
+	return e.JSON(http.StatusOK, map[string]any{
 		"success": true,
 		"permit":  permit,
 		"data":    presentation,

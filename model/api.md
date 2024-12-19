@@ -7,7 +7,7 @@ func Login(email, password string) (Permit, error)
 
 // Permit
 func (Permit) Logout() error
-func (Permit) PresentUser() (UserPresentation, error)
+func (Permit) RenderPortfolio() (PortfolioPage, error)
 func (Permit) Deposit(amount int) error
 
 // Others
