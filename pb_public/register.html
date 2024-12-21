@@ -18,7 +18,7 @@
 
     <!-- Navigation Script -->
     <script type="module">
-        if (localStorage.permit && localStorage.user) window.location.replace("/portfolio.html");
+        if (localStorage.permit) window.location.replace("/portfolio.html");
     </script>
 
     <!-- Alpine JavaScript -->
@@ -89,15 +89,15 @@
                     "Content-type": "application/json; charset=UTF-8"
                 }
             }).then((response) => response.json()).then((data) => {
-                if (data.success == false) {
+                if (!data.success && data.message) {
                     document.getElementById("errorMessageBox").style.display = 'block';
                     document.getElementById("errorMessage").innerHTML = data.message;
-                    return;
                 }
 
-                localStorage.setItem("permit", data.permit);
-                localStorage.setItem("user", JSON.stringify(data.data));
-                window.location.replace("/portfolio.html");
+                if (data.permit) {
+                    localStorage.setItem("permit", data.permit);
+                    window.location.replace("/portfolio.html");
+                }
             });
         }
     </script>

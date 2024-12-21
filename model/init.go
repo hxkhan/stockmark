@@ -33,6 +33,6 @@ func updateTickers() {
 	}
 
 	for _, v := range tickers {
-		go fetchStock(v.Ticker)
+		go fetchStock(v)
 	}
 }

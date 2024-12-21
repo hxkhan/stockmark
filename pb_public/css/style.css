@@ -29,7 +29,6 @@ a:hover {
     color: var(--red);
 }
 
-/* border-radius = 0 */
 .br-0 {
     border-radius: 0;
 }
@@ -114,18 +113,4 @@ header>nav>.active {
     header {
         padding: 25px 25px;
     }
-}
-
-table,
-th {
-    border: 2px solid black;
-    border-style: groove;
-    font-style: italic;
-    font-size: large;
-}
-
-td {
-    border: 2px solid black;
-    font-size: smaller;
-    font-style: italic;
 }

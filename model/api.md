@@ -8,6 +8,7 @@ func Login(email, password string) (Permit, error)
 // Permit
 func (Permit) Logout() error
 func (Permit) RenderPortfolio() (PortfolioPage, error)
+func (Permit) RenderTrade() (TradePage, error)
 func (Permit) Deposit(amount int) error
 
 // Others

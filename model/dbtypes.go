@@ -1,12 +1,14 @@
 package model
 
 import (
+	"log"
+
 	"github.com/pocketbase/dbx"
 )
 
 type User struct {
 	Id             string  `db:"id"`
-	Password       string  `db:"password"`
+	Password       string  `db:"password" json:"-"`
 	TokenKey       string  `db:"tokenKey"`
 	Email          string  `db:"email"`
 	FirstName      string  `db:"firstName"`
@@ -21,38 +23,66 @@ type Ticker struct {
 }
 
 type Asset struct {
-	Id          string  `db:"id"`
-	Ticker      string  `db:"ticker"`
-	Amount      int     `db:"amount"`
-	AverageCost float64 `db:"averageCost"`
+	Ticker      string  `json:"ticker"`
+	Amount      int     `json:"amount"`
+	AverageCost float64 `json:"averageCost"`
 }
 
-func (u User) FetchAssets() []Asset {
-	assets := []Asset{}
+type Transaction struct {
+	Id        string  `db:"id" json:"id"`
+	Action    string  `db:"action" json:"action"`
+	Ticker    string  `db:"ticker" json:"ticker"`
+	Amount    int     `db:"amount" json:"amount"`
+	UnitPrice float64 `db:"unitPrice" json:"unitPrice"`
+	Time      string  `db:"time" json:"time"`
+}
+
+func (u User) FetchTransactions() []Transaction {
+	transactions := []Transaction{}
 	pb.DB().NewQuery(`
-		SELECT assets.id AS id, tickers.ticker AS ticker, amount, averageCost
-		FROM assets
-		LEFT JOIN users ON assets.owner = users.id
-		LEFT JOIN tickers ON assets.ticker = tickers.id
-		WHERE assets.owner = {:o}
+		SELECT transactions.id AS id, action, tickers.ticker AS ticker, amount, unitPrice, time
+		FROM transactions
+		LEFT JOIN tickers ON transactions.ticker = tickers.id
+		WHERE transactions.actor = {:o}
+		ORDER BY time DESC
 	`).Bind(dbx.Params{
 		"o": u.Id,
-	}).All(&assets)
-	return assets
+	}).All(&transactions)
+	return transactions
 }
 
-func (u *User) Deposit(amount int) error {
-	u.CurrentBalance += float64(amount)
-	u.TotalDeposited += float64(amount)
+func (user User) CalculateAssets() (assets []Asset) {
+	allAssets := map[string]struct {
+		amount int
+		avg    float64
+	}{}
 
-	_, err := pb.DB().NewQuery(`
-		UPDATE users 
-		SET currentBalance = {:cb}, totalDeposited = {:td}
-		WHERE users.id = {:id}
-	`).Bind(dbx.Params{
-		"cb": u.CurrentBalance,
-		"td": u.TotalDeposited,
-		"id": u.Id,
-	}).Execute()
-	return err
+	transactions := user.FetchTransactions()
+	for i := len(transactions) - 1; i >= 0; i-- {
+		transact := transactions[i]
+		asset := allAssets[transact.Ticker]
+
+		switch transact.Action {
+		case "buy":
+			// weighted average formula
+			cost := asset.avg*float64(asset.amount) + transact.UnitPrice*float64(transact.Amount)
+			quantity := asset.amount + transact.Amount
+			asset.avg = cost / float64(quantity)
+			asset.amount += transact.Amount
+		case "sell":
+			asset.amount -= transact.Amount
+		default:
+			log.Printf("CalculateAssets() -> unknown action '%v' \n", transact.Action)
+		}
+
+		allAssets[transact.Ticker] = asset
+	}
+
+	for tick, a := range allAssets {
+		if a.amount > 0 {
+			assets = append(assets, Asset{Ticker: tick, Amount: a.amount, AverageCost: a.avg})
+		}
+	}
+
+	return assets
 }

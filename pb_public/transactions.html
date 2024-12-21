@@ -21,14 +21,47 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="transactions.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/transactions.css">
     <script>
     </script>
 </head>
 
 <body>
-    <div th:replace="~{navbar :: navigationBar}"></div>
+    <header>
+        <nav>
+            <a href="/portfolio.html">Portfolio</a>
+            <a href="/trade.html">Trade</a>
+            <a href="/transactions.html" class="active">Transactions</a>
+        </nav>
+
+        <div class="dropdown text-end">
+            <a href="#" class="d-block link-body-emphasis text-decoration-none" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-list"
+                    viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                </svg>
+            </a>
+            <ul class="dropdown-menu text-small">
+                <li class="dropdown-item-mobile"><a class="dropdown-item" href="/trade.html">Trade</a></li>
+                <li class="dropdown-item-mobile"><a class="dropdown-item" href="/transactions.html">Transactions</a></li>
+                <li class="dropdown-item-mobile">
+                    <hr class="dropdown-divider">
+                    </hr>
+                </li>
+                <li><a class="dropdown-item" href="myprofile">Profile</a></li>
+                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#depositModal">Deposit</a></li>
+                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#leaderboardsModal">Leaderboards</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                    </hr>
+                </li>
+                <li><a class="dropdown-item" href="" @click="logout()">Sign out</a></li>
+            </ul>
+        </div>
+    </header>
 
     <!-- Deposit Modal  -->
     <div class="modal fade" id="depositModal" tabindex="-1" aria-hidden="true">

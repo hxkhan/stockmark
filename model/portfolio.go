@@ -35,10 +35,10 @@ type PortfolioPage struct {
 
 	TotalChangeToday float64 `json:"totalChangeToday"`
 
-	Assets []AssetInstance `json:"assets"`
+	Assets []PortfolioPageAsset `json:"assets"`
 }
 
-type AssetInstance struct {
+type PortfolioPageAsset struct {
 	Ticker       string  `json:"ticker"`
 	Amount       int     `json:"amount"`
 	TotalWorth   float64 `json:"totalWorth"`
@@ -52,7 +52,7 @@ func (p Permit) RenderPortfolio() (PortfolioPage, error) {
 		return PortfolioPage{}, err
 	}
 
-	assets := acc.FetchAssets()
+	assets := acc.CalculateAssets()
 
 	user := PortfolioPage{FirstName: acc.FirstName, LastName: acc.LastName, Email: acc.Email, CurrentBalance: acc.CurrentBalance, DepositedTillDate: acc.TotalDeposited}
 	userHasAssets := len(assets) != 0
@@ -102,7 +102,7 @@ func (p Permit) RenderPortfolio() (PortfolioPage, error) {
 			//user.LeastProfitableTodayPc = ((currentvalue / yesterdayValue) - 1) * 100
 		}
 
-		user.Assets = append(user.Assets, AssetInstance{asset.Ticker, asset.Amount, currentvalue, stock.LastPrice, stock.PercentChange * 100})
+		user.Assets = append(user.Assets, PortfolioPageAsset{asset.Ticker, asset.Amount, currentvalue, stock.LastPrice, stock.PercentChange * 100})
 	}
 
 	// mostly roundings

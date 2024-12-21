@@ -11,7 +11,7 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-// go build -o ./main.exe ./src && ./main serve
+// go build -o main.exe . && main serve
 func main() {
 	app := pocketbase.New()
 	model.Initialize(app)
@@ -24,6 +24,8 @@ func main() {
 		se.Router.POST("/login", OnPostLogin)
 
 		se.Router.GET("/portfolio", OnGetPortfolio)
+		se.Router.GET("/trade", OnGetTrade)
+		se.Router.GET("/transact", OnGetTransact)
 		se.Router.GET("/deposit", OnGetDeposit)
 
 		return se.Next()

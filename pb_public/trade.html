@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stockmark - Trade</title>
+    <title>Stockmark - Portfolio</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -16,54 +16,52 @@
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
 
+    <!-- Navigation Script -->
+    <script type="module">
+        if (!localStorage.permit) window.location.replace("/");
+    </script>
+
+
     <!-- Alpine JavaScript -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script type="module" src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="trade.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/portfolio.css">
 </head>
 
-<body>
+<body x-init="initialize()">
     <header>
-        <a class="header-title smaller-screen-header" href="#">Stockmark</a>
         <nav>
-            <a th:class="${activePage == 'portfolio' ? 'active' : ''}" href="/portfolio">Portfolio</a>
-            <a th:class="${activePage == 'trade' ? 'active' : ''}" href="/trade">Trade</a>
-            <a th:class="${activePage == 'transactions' ? 'active' : ''}" href="/transactions">Transactions</a>
-            <a th:class="${activePage == 'privateGame' ? 'active' : ''}" href="/privateGame">Games (unfinished)</a>
+            <a href="/portfolio.html">Portfolio</a>
+            <a href="/trade.html" class="active">Trade</a>
         </nav>
 
         <div class="dropdown text-end">
             <a href="#" class="d-block link-body-emphasis text-decoration-none" data-bs-toggle="dropdown"
                 aria-expanded="false">
-                <svg id="profile-icon" xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="#D8D8D8"
-                    class="bi bi-person-circle" viewBox="0 0 16 16">
-                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-list"
+                    viewBox="0 0 16 16">
                     <path fill-rule="evenodd"
-                        d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
-                </svg>
-                <svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#D8D8D8"
-                    class="bi bi-menu-up" viewBox="0 0 16 16">
-                    <path
-                        d="M7.646 15.854a.5.5 0 0 0 .708 0L10.207 14H14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3.793l1.853 1.854zM1 9V6h14v3H1zm14 1v2a1 1 0 0 1-1 1h-3.793a1 1 0 0 0-.707.293l-1.5 1.5-1.5-1.5A1 1 0 0 0 5.793 13H2a1 1 0 0 1-1-1v-2h14zm0-5H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v2zM2 11.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 0-1h-8a.5.5 0 0 0-.5.5zm0-4a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 0-1h-11a.5.5 0 0 0-.5.5zm0-4a.5.5 0 0 0 .5.5h6a.5.5 0 0 0 0-1h-6a.5.5 0 0 0-.5.5z" />
+                        d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
                 </svg>
             </a>
             <ul class="dropdown-menu text-small">
-                <li class="dropdown-item-mobile"><a class="dropdown-item" href="trade">Trade</a></li>
-                <li class="dropdown-item-mobile"><a class="dropdown-item" href="transactions">Transactions</a></li>
+                <li class="dropdown-item-mobile"><a class="dropdown-item" href="/trade.html">Trade</a></li>
+                <li class="dropdown-item-mobile"><a class="dropdown-item" href="/transactions.html">Transactions</a>
+                </li>
                 <li class="dropdown-item-mobile">
                     <hr class="dropdown-divider">
+                    </hr>
                 </li>
                 <li><a class="dropdown-item" href="myprofile">Profile</a></li>
                 <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#depositModal">Deposit</a></li>
-                <li><a class="dropdown-item" data-bs-toggle="modal"
-                        data-bs-target="#leaderboardsModal">Leaderboards</a></li>
+                </li>
                 <li>
                     <hr class="dropdown-divider">
+                    </hr>
                 </li>
-                <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+                <li><a class="dropdown-item" href="" @click="logout()">Sign out</a></li>
             </ul>
         </div>
     </header>
@@ -71,64 +69,248 @@
     <!-- Separator -->
     <div class="separator"></div>
 
-    <div class="input-group search-bar">
-        <form action="/search" id="searchForm" class="d-flex">
-            <input type="text" class="form-control" name="value" placeholder="Search...">
-            <button type="submit" class="input-group-append">
-                <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-                    <style>svg{fill:#d2d2d2}</style>
-                    <path d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"/>
-                </svg>        
-            </button>
-        </form>
+    <!-- View Stock Modal  -->
+    <div class="modal fade" id="viewStockModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rubik" style="color: black;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewStockTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Stats</label>
+                    <div class="input-group mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="viewStockLowPrice" disabled>
+                            <label>Low price (24h)</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="viewStockHighPrice" disabled>
+                            <label>High price (24h)</label>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="viewStockCurrentPrice" disabled>
+                        <label>Current price</label>
+                    </div>
+
+                    <form id="viewStockForm">
+                        <label class="form-label">Action</label>
+                        <select class="form-select mb-3" id="viewStockAction">
+                            <option selected value="buy">Buy</option>
+                            <option id="viewStockSellOption" value="sell">Sell</option>
+                        </select>
+
+                        <input type="hidden" id="viewStockTicker">
+
+                        <div class="input-group mb-3">
+                            <div class="form-floating">
+                                <input type="number" class="form-control" value="0" min="1" id="viewStockAmount">
+                                <label>Amount</label>
+                            </div>
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="viewStockWorth" value="$0" disabled>
+                                <label>Total worth</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-dark" onclick="actQuickView()" id="viewStockTickerSubmit"
+                        disabled>Submit</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <input id="currentBalance" type="hidden" class="form-control br-0" th:value="${currentBalance}" disabled>
-
-    <div class="content">
-        <div class="content-right rubik" x-data>
-            <div class="p-3">
-                <span class="fs-6 fw-semibold">Todays most profitable</span>
+    <!-- Deposit Modal  -->
+    <div class="modal fade" id="depositModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rubik" style="color: black;" x-data="{ amount: 0 }">
+                <div class="modal-header">
+                    <h5 class="modal-title">Deposit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="deposit(amount); amount = 0;" id="depositForm">
+                        <div class="mb-3">
+                            <label class="form-label">Deposit Amount</label>
+                            <input type="number" class="form-control" x-model="amount">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-dark" form="depositForm">Deposit</button>
+                </div>
             </div>
-            <div class="content-right-scroll">
-                <div class="list-group list-group-flush scrollarea" x-ref="myStocksList">
-                    <a th:each ="stock : ${pricedStocksBestPerforming}" th:x-data="${stock}"
-                    :class="pcChange > 0 ? 'stock-positive' : 'stock-negative'"
+        </div>
+    </div>
+
+    <div class="content rubik">
+        <div class="content-left">
+            <div class="p-3"><span class="fs-4 fw-semibold">My Transactions</span></div>
+            <table class="table table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col">Action</th>
+                        <th scope="col">Ticker</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Unit Price</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsTable">
+                    <template x-for="transaction in $store.data.transactions" :key="transaction.id">
+                        <tr x-data="transaction" :class="(action == 'sell') ? 'table-warning' : 'table-success'">
+                            <td x-text="capitalize(action)"></td>
+                            <td x-text="ticker"></td>
+                            <td x-text="amount"></td>
+                            <td x-text="'$' + unitPrice"></td>
+                            <td x-text="time.split(' ')[0]"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-right">
+            <div class="p-3">
+                <span class="fs-4 fw-semibold">Market</span>
+            </div>
+            <div class="content-right-scroll border">
+                <div class="p-3"><input type="text" class="form-control" placeholder="Search"
+                        oninput="search(this.value)"></div>
+                <div class="list-group list-group-flush scrollarea" id="marketList">
+                    <template x-for="asset in $store.data.market">
+                        <a x-data="asset" :class="(percentChange > 0) ? 'stock-positive' : 'stock-negative'"
+                            @click="openQuickView($data);"
+                            class="my-stocks-item list-group-item list-group-item-action py-3 lh-tight"
+                            aria-current="true">
+                            <div class="d-flex w-100 align-items-center justify-content-between">
+                                <strong class="my-stocks-item-name" x-text="symbol"></strong>
+                                <div class="d-flex flex-column align-items-end">
+                                    <small class="my-stocks-item-value" x-text="'$' + lastPrice"></small>
+                                    <small class="my-stocks-item-pc" x-text="percentChange + '%'"></small>
+                                </div>
+                            </div>
+                        </a>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var depositModal = new bootstrap.Modal(document.getElementById("depositModal"));
+        var viewStockModal = new bootstrap.Modal(document.getElementById("viewStockModal"));
+
+        function initialize() {
+            // default empty
+            Alpine.store('data', { transactions: [], market: [] });
+
+            fetch('/trade?permit=' + localStorage.permit).then((response) => response.json()).then((response) => {
+                if (!response.success) {
+                    localStorage.clear();
+                    window.location.replace("/");
+                }
+
+                // success
+                if (!response.data.transactions) response.data.transactions = [];
+                if (!response.data.market) response.data.market = [];
+                Alpine.store('data', response.data);
+            });
+        }
+
+        function logout() {
+            localStorage.clear();
+            fetch('/logout?permit=' + localStorage.permit);
+        }
+
+        function deposit(amount) {
+            fetch(`/deposit?permit=${localStorage.permit}&amount=${amount}`).then((response) => response.json()).then((response) => {
+                if (response.success) {
+                    Alpine.store('data').currentBalance += Number(amount);
+                    depositModal.hide();
+                } else console.log(response);
+            });
+        }
+
+        function actQuickView() {
+            fetch(`/transact?permit=${localStorage.permit}&action=${viewStockAction.value}&ticker=${viewStockTicker.value}&amount=${viewStockAmount.value}`)
+                .then((response) => response.json()).then((response) => {
+                    if (response.success) {
+                        viewStockModal.hide();
+                        Alpine.store('data', response.data);
+                        //transactionsTable.innerHTML = "";
+                    } else console.log(response);
+                });
+        }
+
+        viewStockForm.addEventListener('change', function () {
+            if (viewStockAction.value == "sell") {
+                viewStockAmount.value = Math.min(
+                    viewStockAmount.value,
+                    Alpine.store("data").assets.find(v => v.ticker == viewStockTicker.value).amount
+                );
+            }
+
+            if (viewStockAmount.value < 0) viewStockAmount.value = 0;
+            if (viewStockAction.value == "buy") {
+                viewStockAmount.value = Math.min(viewStockAmount.value, Math.floor(Alpine.store("data").currentBalance / viewStockCurrentPrice.value.split("$")[1]));
+            }
+
+            viewStockWorth.value = viewStockCurrentPrice.value.split("$")[1] * viewStockAmount.value;
+            if (viewStockAmount.value > 0)
+                viewStockTickerSubmit.disabled = false;
+            else viewStockTickerSubmit.disabled = true;
+        });
+
+        function openQuickView(data) {
+            viewStockTitle.innerText = data.symbolName;
+            viewStockLowPrice.value = '$' + data.lowPrice;
+            viewStockHighPrice.value = '$' + data.highPrice;
+            viewStockCurrentPrice.value = '$' + data.lastPrice;
+            viewStockTicker.value = data.symbol;
+
+            // show/hide sell option depending on if we have the ticker in our assets
+            if (Alpine.store("data").assets.some((v) => v.ticker == viewStockTicker.value))
+                viewStockSellOption.style.display = "block";
+            else
+                viewStockSellOption.style.display = "none";
+
+            viewStockModal.show();
+        }
+
+        function search(input) {
+            input = input.toUpperCase();
+            var results = Alpine.store("data").market.filter(
+                (stock) => (stock.symbol.includes(input) || stock.symbolName.toUpperCase().includes(input))
+            );
+            marketList.innerHTML = "";
+            results.forEach(stock => {
+                marketList.innerHTML += `
+                <a x-data='${JSON.stringify(stock)}' :class="(percentChange > 0) ? 'stock-positive' : 'stock-negative'"
                     @click="openQuickView($data);"
-                        class="my-stocks-item list-group-item list-group-item-action py-3 lh-tight" aria-current="true">
-                        <div class="d-flex w-100 align-items-center justify-content-between">
-                            <strong class="my-stocks-item-name" x-text="name">Stock name</strong>
-                            <div class="d-flex flex-column align-items-end">
-                                <small class="my-stocks-item-value" x-text="'$' + price">Stock price</small>
-                                <small class="my-stocks-item-pc" x-text="pcChange + '%'">Percentage Change</small>
-                            </div>
+                    class="my-stocks-item list-group-item list-group-item-action py-3 lh-tight"
+                    aria-current="true">
+                    <div class="d-flex w-100 align-items-center justify-content-between">
+                        <strong class="my-stocks-item-name" x-text="symbol"></strong>
+                        <div class="d-flex flex-column align-items-end">
+                            <small class="my-stocks-item-value" x-text="'$' + lastPrice"></small>
+                            <small class="my-stocks-item-pc" x-text="percentChange + '%'"></small>
                         </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="content-left rubik" x-data>
-            <div class="p-3">
-                <span class="fs-6 fw-semibold">Todays most unprofitable</span>
-            </div>
-            <div class="content-right-scroll">
-                <div class="list-group list-group-flush scrollarea" x-ref="myStocksList">
-                    <a th:each ="stock : ${pricedStocksWorstPerforming}" th:x-data="${stock}"
-                    :class="pcChange > 0 ? 'stock-positive' : 'stock-negative'"
-                        @click="openQuickView($data);"
-                        class="my-stocks-item list-group-item list-group-item-action py-3 lh-tight" aria-current="true">
-                        <div class="d-flex w-100 align-items-center justify-content-between">
-                            <strong class="my-stocks-item-name" x-text="name">Stock name</strong>
-                            <div class="d-flex flex-column align-items-end">
-                                <small class="my-stocks-item-value" x-text="'$' + price">Stock price</small>
-                                <small class="my-stocks-item-pc" x-text="pcChange + '%'">Percentage Change</small>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+                    </div>
+                </a>`;
+            });
+        }
+
+        function capitalize(str) {
+            return String(str).charAt(0).toUpperCase() + String(str).slice(1);
+        }
+    </script>
 </body>
 
 </html>

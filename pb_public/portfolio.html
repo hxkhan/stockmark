@@ -18,19 +18,7 @@
 
     <!-- Navigation Script -->
     <script type="module">
-        if (!localStorage.permit || !localStorage.user) {
-            localStorage.clear();
-            window.location.replace("/");
-        }
-
-        var response = await(await fetch('/portfolio?permit=' + localStorage.permit)).json();
-        if (response.success == false) {
-            localStorage.clear();
-            window.location.replace("/");
-        }
-
-        // success
-        localStorage.user = JSON.stringify(response.data);
+        if (!localStorage.permit) window.location.replace("/");
     </script>
 
 
@@ -45,9 +33,8 @@
 <body x-init="initialize()">
     <header>
         <nav>
-            <a href="/portfolio" class="active">Portfolio</a>
-            <a href="/trade">Trade</a>
-            <a href="/transactions">Transactions</a>
+            <a href="/portfolio.html" class="active">Portfolio</a>
+            <a href="/trade.html">Trade</a>
         </nav>
 
         <div class="dropdown text-end">
@@ -60,15 +47,15 @@
                 </svg>
             </a>
             <ul class="dropdown-menu text-small">
-                <li class="dropdown-item-mobile"><a class="dropdown-item" href="trade">Trade</a></li>
-                <li class="dropdown-item-mobile"><a class="dropdown-item" href="transactions">Transactions</a></li>
+                <li class="dropdown-item-mobile"><a class="dropdown-item" href="/trade.html">Trade</a></li>
+                <li class="dropdown-item-mobile"><a class="dropdown-item" href="/transactions.html">Transactions</a>
+                </li>
                 <li class="dropdown-item-mobile">
                     <hr class="dropdown-divider">
                     </hr>
                 </li>
                 <li><a class="dropdown-item" href="myprofile">Profile</a></li>
                 <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#depositModal">Deposit</a></li>
-                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#leaderboardsModal">Leaderboards</a>
                 </li>
                 <li>
                     <hr class="dropdown-divider">
@@ -164,46 +151,20 @@
         </div>
     </div>
 
-    <!-- Leaderboards Modal  -->
-    <div class="modal fade" id="leaderboardsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rubik" style="color: black;">
-                <div class="modal-header">
-                    <h5 class="modal-title">Leaderboards</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <ol class="list-group list-group-numbered">
-                        <li th:each="user: ${leaderboards}"
-                            class="list-group-item d-flex justify-content-between align-items-start">
-                            <div class="ms-2 me-auto">
-                                <div class="fw-bold" th:text="${name}"></div>
-                            </div>
-                            <span class="badge bg-dark rounded-pill" th:text="${pcChange} + '%'"></span>
-                        </li>
-                    </ol>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="content">
-        <div class="content-left rubik">
+    <div class="content rubik">
+        <div class="content-left">
             <div class="p-3"><span class="fs-4 fw-semibold">My Progress</span></div>
             <div class="content-left-split">
                 <div class="content-left-split-item border">
                     <div class="p-3"><span class="fs-5">Overall</span></div>
                     <div class="input-group">
                         <div class="form-floating">
-                            <input type="text" class="form-control br-0" :value="'$' + $store.user.depositedTillDate"
+                            <input type="text" class="form-control br-0" :value="'$' + $store.data.depositedTillDate"
                                 disabled>
                             <label>Deposited till date</label>
                         </div>
                         <div class="form-floating">
-                            <input type="text" class="form-control br-0" :value="'$' + $store.user.currentBalance"
+                            <input type="text" class="form-control br-0" :value="'$' + $store.data.currentBalance"
                                 disabled>
                             <label>Current balance</label>
                         </div>
@@ -211,11 +172,11 @@
                     <div class="input-group">
                         <div class="form-floating">
                             <input type="text" class="form-control br-0"
-                                :value="'$' + $store.user.totalSpentOnActiveAssets" disabled>
+                                :value="'$' + $store.data.totalSpentOnActiveAssets" disabled>
                             <label>Assets cost</label>
                         </div>
                         <div class="form-floating">
-                            <input type="text" class="form-control br-0" :value="'$' + $store.user.activeAssetsValue"
+                            <input type="text" class="form-control br-0" :value="'$' + $store.data.activeAssetsValue"
                                 disabled>
                             <label>Assets value</label>
                         </div>
@@ -223,13 +184,13 @@
                     <div class="input-group">
                         <div class="form-floating">
                             <input type="text" class="form-control br-0"
-                                :value="$store.user.mostProfitable || 'Unavailable'" disabled>
+                                :value="$store.data.mostProfitable || 'Unavailable'" disabled>
                             <label>Most profitable</label>
                         </div>
                         <div class="form-floating">
                             <input type="text" class="form-control br-0"
-                                :class="($store.user.mostProfitableAmount > 0) ? 'text-green' : 'text-red'"
-                                :value="'$' + Math.abs($store.user.mostProfitableAmount) + ' or ' + $store.user.mostProfitablePc+'%'"
+                                :class="($store.data.mostProfitableAmount > 0) ? 'text-green' : 'text-red'"
+                                :value="'$' + Math.abs($store.data.mostProfitableAmount) + ' or ' + $store.data.mostProfitablePc+'%'"
                                 disabled>
                             <label>Change</label>
                         </div>
@@ -237,13 +198,13 @@
                     <div class="input-group">
                         <div class="form-floating">
                             <input type="text" class="form-control br-0"
-                                :value="$store.user.leastProfitable || 'Unavailable'" disabled>
+                                :value="$store.data.leastProfitable || 'Unavailable'" disabled>
                             <label>Least profitable</label>
                         </div>
                         <div class="form-floating">
                             <input type="text" class="form-control br-0"
-                                :class="($store.user.leastProfitableAmount > 0) ? 'text-green' : 'text-red'"
-                                :value="'$' + Math.abs($store.user.leastProfitableAmount) + ' or ' + $store.user.leastProfitablePc+'%'"
+                                :class="($store.data.leastProfitableAmount > 0) ? 'text-green' : 'text-red'"
+                                :value="'$' + Math.abs($store.data.leastProfitableAmount) + ' or ' + $store.data.leastProfitablePc+'%'"
                                 disabled>
                             <label>Change</label>
                         </div>
@@ -254,13 +215,13 @@
                     <div class="input-group">
                         <div class="form-floating">
                             <input type="text" class="form-control br-0"
-                                :value="$store.user.mostProfitableToday || 'Unavailable'" disabled>
+                                :value="$store.data.mostProfitableToday || 'Unavailable'" disabled>
                             <label>Most profitable</label>
                         </div>
                         <div class="form-floating">
                             <input type="text" class="form-control br-0 text-green"
-                                :class="($store.user.mostProfitableTodayAmount > 0) ? 'text-green' : 'text-red'"
-                                :value="'$' + Math.abs($store.user.mostProfitableTodayAmount) + ' or ' + $store.user.mostProfitableTodayPc+'%'"
+                                :class="($store.data.mostProfitableTodayAmount > 0) ? 'text-green' : 'text-red'"
+                                :value="'$' + Math.abs($store.data.mostProfitableTodayAmount) + ' or ' + $store.data.mostProfitableTodayPc+'%'"
                                 disabled>
                             <label>Change</label>
                         </div>
@@ -268,13 +229,13 @@
                     <div class="input-group">
                         <div class="form-floating">
                             <input type="text" class="form-control br-0"
-                                :value="$store.user.leastProfitableToday || 'Unavailable'" disabled>
+                                :value="$store.data.leastProfitableToday || 'Unavailable'" disabled>
                             <label>Least profitable</label>
                         </div>
                         <div class="form-floating">
                             <input type="text" class="form-control br-0 text-red"
-                                :class="($store.user.leastProfitableTodayAmount > 0) ? 'text-green' : 'text-red'"
-                                :value="'$' + Math.abs($store.user.leastProfitableTodayAmount) + ' or ' + $store.user.leastProfitableTodayPc+'%'"
+                                :class="($store.data.leastProfitableTodayAmount > 0) ? 'text-green' : 'text-red'"
+                                :value="'$' + Math.abs($store.data.leastProfitableTodayAmount) + ' or ' + $store.data.leastProfitableTodayPc+'%'"
                                 disabled>
                             <label>Change</label>
                         </div>
@@ -282,8 +243,8 @@
                     <div class="input-group">
                         <div class="form-floating">
                             <input type="text" class="form-control br-0"
-                                :class="($store.user.totalChangeToday > 0) ? 'text-green' : 'text-red'"
-                                :value="'$' + Math.abs($store.user.totalChangeToday)" disabled>
+                                :class="($store.data.totalChangeToday > 0) ? 'text-green' : 'text-red'"
+                                :value="'$' + Math.abs($store.data.totalChangeToday)" disabled>
                             <label>Total change</label>
                         </div>
                     </div>
@@ -291,14 +252,14 @@
             </div>
         </div>
 
-        <div class="content-right rubik">
+        <div class="content-right">
             <div class="p-3">
                 <span class="fs-4 fw-semibold">My Stocks</span>
             </div>
             <div class="content-right-scroll border">
                 <div class="p-3"><span class="fs-5">Currently</span></div>
                 <div class="list-group list-group-flush scrollarea">
-                    <template x-for="asset in $store.user.assets">
+                    <template x-for="asset in $store.data.assets">
                         <a x-data="asset" :class="(changePc > 0) ? 'stock-positive' : 'stock-negative'"
                             @click="openQuickView($data);"
                             class="my-stocks-item list-group-item list-group-item-action py-3 lh-tight"
@@ -322,11 +283,20 @@
         var viewStockModal = new bootstrap.Modal(document.getElementById("viewStockModal"));
 
         function initialize() {
-            var user = JSON.parse(localStorage.user);
-            if (user.assets == null) user.assets = [];
-            if (user.history == null) user.history = [];
-            Alpine.store('user', user);
-            // Alpine.store('user').Something = 'Doe';
+            // default empty
+            Alpine.store('data', { assets: [], history: [] });
+
+            fetch('/portfolio?permit=' + localStorage.permit).then((response) => response.json()).then((response) => {
+                if (!response.success) {
+                    localStorage.clear();
+                    window.location.replace("/");
+                }
+
+                // success
+                if (!response.data.assets) response.data.assets = [];
+                if (!response.data.history) response.data.history = [];
+                Alpine.store('data', response.data);
+            });
         }
 
         function logout() {
@@ -336,9 +306,10 @@
 
         function deposit(amount) {
             fetch(`/deposit?permit=${localStorage.permit}&amount=${amount}`).then((response) => response.json()).then((response) => {
-                if (response.success == true) {
+                if (response.success) {
+                    Alpine.store("data").depositedTillDate += Number(amount);
+                    Alpine.store('data').currentBalance += Number(amount);
                     depositModal.hide();
-                    Alpine.store('user', response.data);
                 } else console.log(response);
             });
         }

@@ -61,15 +61,6 @@
     color: var(--red);
 }
 
-/* .form-control:disabled {
-    background-color: #D8D8D8;
-}
-
-.form-floating>.form-control:disabled~label::after,
-.form-floating>:disabled~label::after {
-    background-color: #D8D8D8;
-} */
-
 .modal-container {
     display: flex;
     flex-direction: row;
